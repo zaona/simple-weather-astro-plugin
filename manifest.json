@@ -1,9 +1,9 @@
 {
-    "name": "testplugin",
+    "name": "简明天气同步器",
     "icon": "icon.png",
     "version": "1.0",
-    "description": "测试插件",
-    "author": "test",
+    "description": "在AstroBox中同步天气数据到简明天气",
+    "author": "Zaona",
     "website": "no.thankyou",
     "entry": "main.js",
     "api_level": 1,

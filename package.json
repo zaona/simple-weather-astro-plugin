@@ -1,5 +1,5 @@
 {
-  "name": "astrobox-plugin-template",
+  "name": "simple-weather-astro-plugin",
   "private": true,
   "version": "1.0.0",
   "scripts": {
