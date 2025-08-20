@@ -11,7 +11,10 @@
         "lifecycle",
         "config",
         "network",
-        "ui"
+        "ui",
+        "native",
+        "thirdpartyapp",
+        "interconnect"
     ],
     "additional_files": []
 }

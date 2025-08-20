@@ -6,7 +6,7 @@ const targets = ["last 2 versions", "> 0.2%",  "not dead",  "Firefox ESR"];
 
 export default defineConfig({
 	entry: {
-		main: "./src/index.ts"
+		main: "./src/index.js"
 	},
 	resolve: {
 		extensions: [".ts", ".js"]
