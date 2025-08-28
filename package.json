@@ -4,7 +4,7 @@
   "version": "1.1",
   "scripts": {
     "build": "rspack build",
-    "package": "cd dist && zip -r ../simple-weather.abp ./*"
+    "package": "rspack build && cd dist && zip -r ../simple-weather.abp ./*"
   },
   "devDependencies": {
     "@rspack/cli": "^1.4.6",
