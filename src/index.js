@@ -6,6 +6,11 @@ let file
 // UI服务启动
 let ICSendId = AstroBox.native.regNativeFun(ICSend);
 let PickId = AstroBox.native.regNativeFun(onPick);
+let OpenBrowserId = AstroBox.native.regNativeFun(openBrowser); // 注册打开浏览器功能
+
+// 保存原始提示信息
+let originalAttentionText = "第二步：请在上方输入框里粘贴json格式数据";
+let originalBrowserTipText = "第一步：在网站中查询后复制天气数据";
 
 AstroBox.lifecycle.onLoad(() => {
   ui = [
@@ -31,22 +36,39 @@ AstroBox.lifecycle.onLoad(() => {
       },
     },
     {
-      node_id: "attention",
+      node_id: "openBrowser",
       visibility: true,
       disabled: false,
       content: {
-        type: "Text",
-        value: `请在上方输入框里粘贴json格式数据`,
+        type: "Button",
+        value: { primary: false, text: "打开简明天气数据网站", callback_fun_id: OpenBrowserId }, // 打开浏览器按钮
       },
-    }
-    ,
+    },
     {
-      node_id: "tip",
+      node_id: "browserTip", // 第一行提示
       visibility: true,
       disabled: false,
       content: {
         type: "Text",
-        value: `注意：请你先在手环上退出简明天气，以保证此插件能与应用正常通信`,
+        value: originalBrowserTipText,
+      },
+    },
+    {
+      node_id: "attention", // 第二行提示
+      visibility: true,
+      disabled: false,
+      content: {
+        type: "Text",
+        value: originalAttentionText,
+      },
+    },
+    {
+      node_id: "tip", // 第三行提示
+      visibility: true,
+      disabled: false,
+      content: {
+        type: "Text",
+        value: `第三步：连接手环后打开简明天气，然后点击发送。`,
       },
     }
   ];
@@ -54,67 +76,11 @@ AstroBox.lifecycle.onLoad(() => {
   AstroBox.ui.updatePluginSettingsUI(ui)
 });
 
-// /**
-//  * 从文件路径中提取文件名
-//  * @param {string} filePath - 文件路径
-//  * @returns {string} 文件名
-//  */
-// export function getFileName(filePath) {
-//   if (!filePath) return '';
-//   // 统一路径分隔符并获取最后一部分
-//   return filePath.replace(/\\/g, '/').split('/').pop() || '';
-// }
-
-// 文件选择
-// async function onPick() {
-//   console.log("pick in")
-//   try {
-//     if (file?.path) await AstroBox.filesystem.unloadFile(file.path)
-//   } catch (error) {
-//     console.error(error)
-//     ui[2].content.value = error.message
-//     AstroBox.ui.updatePluginSettingsUI(ui)
-//   }
-//   console.log("no pick in")
-
-//   file = await AstroBox.filesystem.pickFile({
-//     decode_text: false,
-//   })
-
-//   console.log("pick done")
-
-//   await new Promise(resolve => setTimeout(resolve, 1000));
-
-//   if (!file.path.endsWith(".json")) {
-//     // ui[2].content.value = "请选择.json文件";
-//     ui[2].content.value = file.path;
-//     console.log("检查文件")
-//     console.log(file.path)
-//     console.log("检测文件done")
-//     AstroBox.ui.updatePluginSettingsUI(ui);
-//     return;
-//   }
-
-//   console.log("检测 过")
-//   console.log("文件：")
-//   console.log(file.path)
-
-//   courseData = await AstroBox.filesystem.readFile(file.path, {
-//     len: file.text_len,
-//     decode_text: false
-//   });
-//   console.log(typeof(courseData))
-//   console.log("读取文件")
-//   console.log(courseData)
-//   ui[2].content.value = `已选择文件 ${getFileName(file.path)}, 现在请你在手环上重新打开澄序课程表，进入数据接收状态`
-//   ui[3].content.value = ``
-//   ui[1].disabled = false
-//   AstroBox.ui.updatePluginSettingsUI(ui)
-// }
-
 /**
- * 处理文件选择事件
- * @param {any} params - 事件参数
+ • 处理文件选择事件
+
+ • @param {any} params - 事件参数
+
  */
 function onPick(params) {
   console.log("pick in")
@@ -126,16 +92,25 @@ function onPick(params) {
   } else {
     ui[0].content.value.text = "";
     courseData = "";
-    ui[2].content.value = "请先填写配置信息";
+    ui[4].content.value = "请先填写天气信息"; // 更新为attention节点的索引
     AstroBox.ui.updatePluginSettingsUI(ui);
   }
+}
+
+// 恢复原始提示信息的函数
+function restoreOriginalText() {
+  ui[4].content.value = originalAttentionText;
+  AstroBox.ui.updatePluginSettingsUI(ui);
 }
 
 // 数据传输
 async function ICSend() {
   if (!courseData) {
-    ui[2].content.value = "请先填写配置信息";
+    ui[4].content.value = "请先填写天气信息"; // 更新为attention节点的索引
     AstroBox.ui.updatePluginSettingsUI(ui);
+    
+    // 2秒后恢复原始文本
+    setTimeout(restoreOriginalText, 2000);
     return;
   }
 
@@ -143,8 +118,11 @@ async function ICSend() {
     const appList = await AstroBox.thirdpartyapp.getThirdPartyAppList()
     const app = appList.find(app => app.package_name == "com.application.zaona.weather")
     if (!app) {
-      ui[2].content.value = "请先安装简明天气快应用 或 连接设备 或 在手环上重新打开简明天气";
+      ui[4].content.value = "请先安装简明天气快应用 或 连接设备 或 在手环上重新打开简明天气"; // 更新为attention节点的索引
       AstroBox.ui.updatePluginSettingsUI(ui);
+      
+      // 2秒后恢复原始文本
+      setTimeout(restoreOriginalText, 4000);
       return;
     }
 
@@ -152,11 +130,36 @@ async function ICSend() {
       "com.application.zaona.weather",
       JSON.stringify(JSON.parse(courseData))
     );
-    ui[2].content.value = "发送成功，如果手环上出现数据加载异常/黑屏，\n大概率是数据问题，请自行检查"
-    AstroBox.ui.updatePluginSettingsUI(ui)
+    ui[4].content.value = "发送成功，如果手环上出现数据加载异常/黑屏，\n大概率是数据问题，请自行检查" // 更新为attention节点的索引
+    AstroBox.ui.updatePluginSettingsUI(ui);
+    
+    // 3秒后恢复原始文本
+    setTimeout(restoreOriginalText, 3000);
   } catch (error) {
     console.error(error)
-    ui[2].content.value = error
-    AstroBox.ui.updatePluginSettingsUI(ui)
+    ui[4].content.value = error // 更新为attention节点的索引
+    AstroBox.ui.updatePluginSettingsUI(ui);
+    
+    // 3秒后恢复原始文本
+    setTimeout(restoreOriginalText, 3000);
+  }
+}
+
+// 修改后的打开浏览器功能
+function openBrowser() {
+  try {
+    // 直接打开指定的天气网站，不显示提示
+    AstroBox.ui.openPageWithUrl("https://weather.zaona.top/weather");
+  } catch (error) {
+    console.error("打开浏览器失败:", error);
+    // 更新browsertip节点的文字（现在是索引3）
+    ui[3].content.value = "打开浏览器失败，请手动前往weather.zaona.top/weather";
+    AstroBox.ui.updatePluginSettingsUI(ui);
+    
+    // 2秒后恢复原始文本
+    setTimeout(() => {
+      ui[3].content.value = originalBrowserTipText;
+      AstroBox.ui.updatePluginSettingsUI(ui);
+    }, 6000);
   }
 }
