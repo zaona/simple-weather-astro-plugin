@@ -1,0 +1,20 @@
+{
+    "name": "简明天气同步器",
+    "icon": "icon.png",
+    "version": "1.1",
+    "description": "在AstroBox中同步天气数据到简明天气",
+    "author": "Zaona",
+    "website": "https://weather.zaona.top/",
+    "entry": "main.js",
+    "api_level": 1,
+    "permissions": [
+        "lifecycle",
+        "config",
+        "network",
+        "ui",
+        "native",
+        "thirdpartyapp",
+        "interconnect"
+    ],
+    "additional_files": []
+}
