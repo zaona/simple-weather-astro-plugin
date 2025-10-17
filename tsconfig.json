@@ -4,6 +4,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "useDefineForClassFields": true,
+    "allowJs": true,
 
     /* modules */
     "module": "ESNext",

@@ -1,13 +1,12 @@
 import AstroBox from "astrobox-plugin-sdk";
-let courseData
+let weatherData
 let ui
-let file
 
 // UI服务启动
 let ICSendId = AstroBox.native.regNativeFun(ICSend);
 let PickId = AstroBox.native.regNativeFun(onPick);
 let OpenBrowserId = AstroBox.native.regNativeFun(openBrowser); // 注册打开浏览器功能
-
+let OpenGuideId = AstroBox.native.regNativeFun(openGuide); // 注册打开浏览器功能
 AstroBox.lifecycle.onLoad(() => {
   ui = [
     {
@@ -41,30 +40,21 @@ AstroBox.lifecycle.onLoad(() => {
       },
     },
     {
-      node_id: "step1", // 第一行提示
+      node_id: "openGuide",
       visibility: true,
       disabled: false,
       content: {
-        type: "Text",
-        value: "①第一步：在网站中查询并复制天气数据",
+        type: "Button",
+        value: { primary: false, text: "打开数据传输教程", callback_fun_id: OpenGuideId }, // 打开浏览器按钮
       },
     },
     {
-      node_id: "step2", // 第二行提示
+      node_id: "tip", // QQ群提示
       visibility: true,
       disabled: false,
       content: {
         type: "Text",
-        value: "②第二步：在上方输入框中粘贴json格式天气数据",
-      },
-    },
-    {
-      node_id: "step3", // 第三行提示
-      visibility: true,
-      disabled: false,
-      content: {
-        type: "Text",
-        value: "③第三步：连接手环后打开简明天气，然后点击发送。",
+        value: "QQ交流群：947038648",
       },
     },
     {
@@ -92,46 +82,48 @@ function onPick(params) {
   // 更新输入框的值
   if (params !== undefined) {
     ui[0].content.value.text = params;
-    courseData = params;
+    weatherData = params;
     AstroBox.ui.updatePluginSettingsUI(ui);
   } else {
     ui[0].content.value.text = "";
-    courseData = "";
-    ui[6].content.value = "请先填写天气信息"; // 更新attention
+    weatherData = "";
+    ui[5].content.value = "请先粘贴天气数据"; // 更新attention
     AstroBox.ui.updatePluginSettingsUI(ui);
   }
 }
 
 // 数据传输
 async function ICSend() {
-  if (!courseData) {
-    ui[6].content.value = "请先填写天气信息"; // 更新attention
+  if (!weatherData) {
+    ui[5].content.value = "请先粘贴天气数据"; // 更新attention
     AstroBox.ui.updatePluginSettingsUI(ui);
+    return; // 阻止继续执行
   }
 
   try {
     const appList = await AstroBox.thirdpartyapp.getThirdPartyAppList()
     const app = appList.find(app => app.package_name == "com.application.zaona.weather")
     if (!app) {
-      ui[6].content.value = "请先安装简明天气快应用 或 连接设备 或 在手环上重新打开简明天气"; // 更新attention
+      ui[5].content.value = "请先安装简明天气快应用"; // 更新attention
       AstroBox.ui.updatePluginSettingsUI(ui);
+      return; // 阻止继续执行
     }
 
     await AstroBox.interconnect.sendQAICMessage(
       "com.application.zaona.weather",
-      JSON.stringify(JSON.parse(courseData))
+      weatherData
     );
-    ui[6].content.value = "发送成功，如果手环上出现数据加载异常/黑屏，\n大概率是数据问题，请自行检查" // 更新attention
+    ui[5].content.value = "发送成功" // 更新attention
     AstroBox.ui.updatePluginSettingsUI(ui);
 
   } catch (error) {
     console.error(error)
-    ui[6].content.value = error // 更新attention
+    ui[5].content.value = error // 更新attention
     AstroBox.ui.updatePluginSettingsUI(ui);
   }
 }
 
-// 修改后的打开浏览器功能
+// 打开浏览器功能
 function openBrowser() {
   try {
     // 直接打开指定的天气网站，不显示提示
@@ -139,7 +131,20 @@ function openBrowser() {
   } catch (error) {
     console.error("打开浏览器失败:", error);
     // 更新attention
-    ui[6].content.value = "打开浏览器失败，请手动前往weather.zaona.top/weather";
+    ui[5].content.value = "打开浏览器失败（weather.zaona.top/weather）";
+    AstroBox.ui.updatePluginSettingsUI(ui);
+  }
+}
+
+// 打开数据传输教程页面
+function openGuide() {
+  try {
+    // 打开教程文档页面
+    AstroBox.ui.openPageWithUrl("https://www.yuque.com/zaona/weather/plugin");
+  } catch (error) {
+    console.error("打开浏览器失败:", error);
+    // 更新attention
+    ui[5].content.value = "打开浏览器失败（www.yuque.com/zaona/weather/plugin）";
     AstroBox.ui.updatePluginSettingsUI(ui);
   }
 }
