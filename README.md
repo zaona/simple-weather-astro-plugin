@@ -1,6 +1,6 @@
 # 简明天气 快应用 AstroBox插件
 
-> 🧩 simple-weather-astro-plugin
+> 🧩 simple-weather-astrobox-plugin
 
 ---
 
